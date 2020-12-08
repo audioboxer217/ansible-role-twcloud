@@ -16,7 +16,7 @@
 
 - name: Add ENV file
   copy:
-    dest: 
+    dest: /etc/twcloud/twcloud-env
     mode: 0600
     owner: root
     content: |
