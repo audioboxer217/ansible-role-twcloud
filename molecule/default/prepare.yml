@@ -1,0 +1,19 @@
+---
+- name: Prepare
+  hosts: all
+  vars:
+    rhsm_user: "{{ lookup('env', 'RHSM_USER') }}"
+    rhsm_pass: "{{ lookup('env', 'RHSM_PASS') }}"
+    rhsm_pool: "{{ lookup('env', 'RHSM_POOL') }}"
+  tasks:
+  - name: Register with RHSM
+    redhat_subscription:
+      username: "{{ rhsm_user }}"
+      password: "{{ rhsm_pass }}"
+      pool: "{{ rhsm_pool }}"
+      state: present
+  
+  - name: Install Dependencies - Yum
+    yum:
+      name: sudo
+      state: present

@@ -1,0 +1,7 @@
+---
+- name: Cleanup
+  hosts: all
+  tasks:
+  - name: Deregister with RHSM
+    redhat_subscription:
+      state: absent

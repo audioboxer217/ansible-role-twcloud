@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+  - name: Install TeamWork Cloud
+    include_role:
+      name: "ansible-role-twcloud"

@@ -1,0 +1,15 @@
+---
+driver:
+  name: docker
+platforms:
+  - name: rhel7
+    image: registry.access.redhat.com/rhel7:7.9
+    pre_build_image: true
+provisioner:
+  name: ansible
+  env:
+    RHSM_USER: ${RHSM_USER}
+    RHSM_PASS: "${RHSM_PASS}"
+    RHSM_POOL: ${RHSM_POOL}
+verifier:
+  name: ansible
