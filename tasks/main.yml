@@ -1,8 +1,7 @@
 ---
-- name: Unzip applicaton
-  unarchive:
-    src: twcloud.zip
-    dest: /opt/twcloud
+- name: Install Flexnet
+  include_tasks:
+    file: flexnet.yml
 
 - name: Update config file
   lineinfile:

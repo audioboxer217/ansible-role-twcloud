@@ -1,0 +1,14 @@
+[Unit]
+Description=Flexnet License Daemon
+After=network.target network.service
+
+[Service]
+User=lmadmin
+WorkingDirectory=/opt/local/FNPLicenseServerManager/
+ExecStart=/opt/local/FNPLicenseServerManager/lmadmin -allowStopServer yes
+Restart=always
+RestartSec=30
+Type=forking
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,110 @@
+---
+- name: Install Dependencies
+  package:
+    name: 
+    - ld-linux.so.2
+    - redhat-lsb-core-4.1-27.el7.i686
+    state: present
+
+- name: Create lmadmin User
+  user:
+    name: lmadmin
+    comment: Admin User for Flex Server
+    groups: wheel
+
+- name: Create lmadmin Firewall Service
+  copy:
+    src: lmadmin.xml
+    dest: /etc/firewalld/services/lmadmin.xml
+  register: lmadmin_firewall_svc
+
+- name: reload firewalld service
+  systemd:
+    name: firewalld
+    state: reloaded
+  when: lmadmin_firewall_svc is changed
+
+- name: Open Firewall Ports
+  firewalld:
+    state: enabled
+    service: lmadmin
+    immediate: yes
+    permanent: yes
+
+- name: Get lmadmin
+  get_url:
+    dest: /tmp
+    url: https://d1oqhepk9od1tu.cloudfront.net/Flex_License_Server_Utilities/v11.16.4/linux32/lmadmin-i86_lsb-11_16_4_0.bin
+    mode: 0755
+
+- name: Install lmadmin
+  command: '/tmp/lmadmin-i86_lsb-11_16_4_0.bin -i silent -DUSER_INSTALL_DIR=/opt/local/FNPLicenseServerManager'
+  args:
+    creates: /opt/local/FNPLicenseServerManager/regid.2009-06.com.flexerasoftware_*.swidtag
+  register: lmadmin_install
+  failed_when: 
+  - lmadmin_install.stderr is defined
+  - lmadmin_install.stderr != ""
+
+- name: Get Cameo
+  get_url:
+    dest: /opt/local/FNPLicenseServerManager/cameo
+    url: http://d1g91r27pzl568.cloudfront.net/Cameo_daemon/FlexNet_11_14/ipv6/linux/lnx_32/cameo
+    owner: lmadmin
+    group: lmadmin
+
+- name: Create Cameo License Dir
+  file:
+    path: /opt/local/FNPLicenseServerManager/licenses/cameo/
+    state: directory
+
+- name: Copy Cameo to License Dir
+  copy:
+    src: /opt/local/FNPLicenseServerManager/cameo
+    dest: /opt/local/FNPLicenseServerManager/licenses/cameo/cameo
+    remote_src: yes
+
+- name: Get lmgrd
+  get_url:
+    dest: /opt/local/FNPLicenseServerManager/lmgrd
+    url: https://d1oqhepk9od1tu.cloudfront.net/Flex_License_Server_Utilities/v11.16.4/linux32/lmgrd
+    owner: lmadmin
+    group: lmadmin
+
+- name: Create Flexlog.log
+  file:
+    path: /opt/local/FNPLicenseServerManager/FlexLog.log
+    mode: 0664
+    state: touch
+
+- name: Set Directory Perms
+  file:
+    path: /opt/local/FNPLicenseServerManager/
+    recurse: yes
+    owner: lmadmin
+    group: lmadmin
+    state: directory
+    mode: 0755
+
+- name: Copy libs
+  copy:
+    src: "{{ item }}"
+    dest: /usr/lib/{{ item }}
+    mode: 0755
+    remote_src: yes
+  with_fileglob: /opt/local/FNPLicenseServerManager/lib*
+
+- name: Install lmadmin Service
+  copy:
+    src: lmadmin.service
+    dest: /etc/systemd/system/lmadmin.service
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Enable lmadmin Service
+  systemd:
+    name: lmadmin
+    enabled: yes
+    state: started
+    daemon_reload: yes
