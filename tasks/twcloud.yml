@@ -1,0 +1,131 @@
+---
+- name: Install TWCloud Prerequisites
+  package:
+    name:
+    - dejavu-serif-fonts
+    # - tomcat-native
+    state: present
+
+- name: Setup twcloud User
+  user:
+    name: twcloud
+    comment: TeamWork Cloud Admin user
+    state: present
+
+- name: Get twcloud Installer
+  get_url:
+    dest: /tmp
+    url: http://download1.nomagic.com/twcloud190sp4/twcloud_190_sp4_installer_linux64.bin
+    mode: 0755
+
+- name: Install TeamWork Cloud
+  command: |
+    /tmp/twcloud_190_sp4_installer_linux64.bin \
+    -i silent \
+    -DUSER_INSTALL_DIR="/opt/local/TeamworkCloud" \
+    -DLOCAL_IP="{{ ansible_default_ipv4.address }}" \
+    -DCLUSTER_SEED_NODE="{{ ansible_default_ipv4.address }}" \
+    -DTWCLOUD_OWNR="twcloud" \
+    -DTWCLOUD_JAVA_HOME="/etc/alternatives/jre_1.8.0"
+  args:
+    creates: /opt/local/TeamworkCloud/twcloud
+  register: twcloud_install
+  failed_when: 
+  - twcloud_install.stderr is defined
+  - twcloud_install.stderr != ""
+
+- name: Set Directory Perms
+  file:
+    path: /opt/local/TeamworkCloud/
+    recurse: yes
+    owner: twcloud
+    group: twcloud
+    state: directory
+    mode: 0755
+
+- name: Update config files with IP
+  lineinfile:
+    path: "{{ conf_file }}"
+    state: present
+    regexp: localhost
+    line: "{{ ansible_default_ipv4.address }}"
+  loop:
+  - /opt/local/TeamworkCloud/configuration/application.conf
+  - /opt/local/TeamworkCloud/AuthServer/config/authserver.properties
+  loop_control:
+    loop_var: conf_file
+
+- name: Create twcloud Firewall Service
+  copy:
+    src: twcloud.xml
+    dest: /etc/firewalld/services/twcloud.xml
+  register: twcloud_firewall_svc
+
+- name: reload firewalld service
+  systemd:
+    name: firewalld
+    state: reloaded
+  when: twcloud_firewall_svc is changed
+
+- name: Open Firewall Ports
+  firewalld:
+    state: enabled
+    service: twcloud
+    immediate: yes
+    permanent: yes
+
+- name: Increase file limits for twcloud user
+  lineinfile:
+    path: /etc/security/limits.d/twcloud.conf
+    create: yes
+    state: present
+    line: twcloud - nofile 50000 
+
+- name: Sysctl Performance Tuning
+  sysctl:
+    name: "{{ sysctl_setting.name }}"
+    reload: yes
+    state: present
+    value: "{{ sysctl_setting.value }}"
+  loop_control:
+    loop_var: sysctl_setting
+  loop:
+  - { name: 'net.core.rmem_max', value: '16777216' }
+  - { name: 'net.core.wmem_max', value: '16777216' }
+  - { name: 'net.core.optmem_max', value: '40960' }
+  - { name: 'net.core.default_qdisc', value: 'fq' }
+  - { name: 'net.core.somaxconn', value: '4096' }
+  - { name: 'net.ipv4.conf.all.arp_notify ', value: ' 1' }
+  - { name: 'net.ipv4.tcp_keepalive_time', value: '60' }
+  - { name: 'net.ipv4.tcp_keepalive_probes', value: '3' }
+  - { name: 'net.ipv4.tcp_keepalive_intvl', value: '10' }
+  - { name: 'net.ipv4.tcp_mtu_probing', value: '1' }
+  - { name: 'net.ipv4.tcp_rmem', value: '4096 12582912 16777216' }
+  - { name: 'net.ipv4.tcp_wmem', value: '4096 12582912 16777216' }
+  - { name: 'net.ipv4.tcp_max_syn_backlog', value: '8096' }
+  - { name: 'net.ipv4.tcp_slow_start_after_idle ', value: ' 0' }
+  - { name: 'net.ipv4.tcp_tw_reuse ', value: ' 1' }
+  - { name: 'vm.max_map_count ', value: ' 1048575' }
+  - { name: 'vm.swappiness ', value: ' 0' }
+  - { name: 'vm.dirty_background_ratio', value: '5' }
+  - { name: 'vm.dirty_ratio', value: '80' }
+  - { name: 'vm.dirty_expire_centisecs ', value: ' 12000' }
+
+- name: Create tunedisk.sh Script
+  copy:
+    dest: /home/twcloud/tunedisk.sh
+    src: tunedisk.sh
+    mode: 0755
+
+- name: Add tunedisk.sh to Server Startup
+  lineinfile:
+    path: /etc/rc.local
+    insertafter: EOF
+    mode: 0755
+    line: |
+      #  Perform additional tuning for TeamworkCloud
+      /home/twcloud/tunedisk.sh
+
+- name: Execute tunedisk.sh
+  command: /home/twcloud/tunedisk.sh
+  

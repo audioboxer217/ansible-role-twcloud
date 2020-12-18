@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service version="1.0">
+    <short>twcloud</short>
+    <description>twcloud</description>
+    <port port="8111" protocol="tcp"/>
+    <port port="3579" protocol="tcp"/>
+    <port port="10002" protocol="tcp"/>
+    <port port="8555" protocol="tcp"/>
+    <port port="2552" protocol="tcp"/>
+    <port port="2468" protocol="tcp"/>
+    <port port="8443" protocol="tcp"/>
+</service>
