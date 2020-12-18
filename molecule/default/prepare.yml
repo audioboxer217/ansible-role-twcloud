@@ -15,5 +15,12 @@
   
   - name: Install Dependencies - Yum
     yum:
-      name: sudo
+      name: 
+      - sudo
+      - dnf
       state: present
+
+  - name: Yum Update
+    yum:
+      name: "*"
+      state: latest

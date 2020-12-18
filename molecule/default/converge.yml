@@ -1,7 +1,25 @@
 ---
 - name: Converge
   hosts: all
+  become: yes
   tasks:
-  - name: Install TeamWork Cloud
-    include_role:
-      name: "ansible-role-twcloud"
+  # - name: Set Cassandra Vars
+  #   include_vars: cassandra_config.yml
+
+  # - name: Install OpenJDK
+  #   include_role: 
+  #     name: infopen.openjdk-jdk
+  #   vars:
+  #     openjdk_jdk_packages:
+  #     - name: "java-1.8.0-openjdk"
+
+  - debug:
+      var: ansible_default_ipv4
+
+  # - name: Install Cassandra
+  #   include_role: 
+  #     name: locp.cassandra
+
+  # - name: Install TeamWork Cloud
+  #   include_role:
+  #     name: "ansible-role-twcloud"
