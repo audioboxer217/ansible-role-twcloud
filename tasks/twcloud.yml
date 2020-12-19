@@ -12,11 +12,17 @@
     comment: TeamWork Cloud Admin user
     state: present
 
+- name: Check that the somefile.conf exists
+  stat:
+    path: /tmp/twcloud_190_sp4_installer_linux64.bin
+  register: twcloud_installer_file
+
 - name: Get twcloud Installer
   get_url:
     dest: /tmp
     url: http://download1.nomagic.com/twcloud190sp4/twcloud_190_sp4_installer_linux64.bin
     mode: 0755
+  when: not twcloud_installer_file.stat.exists
 
 - name: Install TeamWork Cloud
   command: |
