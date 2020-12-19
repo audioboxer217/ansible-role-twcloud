@@ -134,4 +134,7 @@
 
 - name: Execute tunedisk.sh
   command: /home/twcloud/tunedisk.sh
-  
+  register: tunedisk_result
+  failed_when:
+  - tunedisk_result.stderr is defined
+  - tunedisk_result.stderr != ""
