@@ -1,0 +1,15 @@
+---
+- name: Install {{ service_name }} Service
+  copy:
+    src: "{{ service_name }}.service"
+    dest: /etc/systemd/system/{{ service_name }}.service
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Enable {{ service_name }} Service
+  systemd:
+    name: "{{ service_name }}"
+    enabled: yes
+    state: started
+    daemon_reload: yes
