@@ -111,21 +111,18 @@
     src: tunedisk.sh
     mode: 0755
 
-# - name: Add tunedisk.sh to Server Startup
-#   lineinfile:
-#     path: /etc/rc.local
-#     insertafter: EOF
-#     mode: 0755
-#     line: |
-#       #  Perform additional tuning for TeamworkCloud
-#       /home/twcloud/tunedisk.sh
+- name: Add tunedisk.sh to Server Startup
+  lineinfile:
+    path: /etc/rc.local
+    insertafter: EOF
+    mode: 0755
+    line: |
+      #  Perform additional tuning for TeamworkCloud
+      /home/twcloud/tunedisk.sh
 
-# - name: Execute tunedisk.sh
-#   command: /home/twcloud/tunedisk.sh
-#   register: tunedisk_result
-#   failed_when:
-#   - tunedisk_result.stderr is defined
-#   - tunedisk_result.stderr != ""
+- name: Execute tunedisk.sh
+  command: /home/twcloud/tunedisk.sh
+  register: tunedisk_result
 
 - name: Update config files with IP
   replace:
