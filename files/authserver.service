@@ -1,0 +1,14 @@
+[Unit]
+ Description=No Magic AuthServer
+ After=syslog.target network.target
+[Service]
+ Type=simple
+ EnvironmentFile=/etc/twcloud/twcloud-env
+ User=twcloud
+ Group=twcloud
+ ExecStart=/opt/local/TeamworkCloud/AuthServer/authserver-run
+ StandardOutput=journal+console
+ StandardError=journal+console
+ SuccessExitStatus=143
+[Install]
+ WantedBy=multi-user.target

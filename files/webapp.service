@@ -1,0 +1,16 @@
+[Unit]
+  Description=Web Application Platform
+  After=syslog.target network.target
+[Service]
+  Type=forking
+  User=twcloud
+  Group=twcloud
+  Environment=JRE_HOME=/opt/local/TeamworkCloud/WebAppPlatform/jre
+  Environment=CATALINA_PID=/var/run/webapp/webapp.pid
+  Environment=CATALINA_HOME_WEBAPP=/opt/local/TeamworkCloud/WebAppPlatform
+  Environment=CATALINA_BASE=/opt/local/TeamworkCloud/WebAppPlatform
+  Environment='JAVA_OPTS=-Djava.awt.headless=true -Djava.security.egd=file:/dev/./urandom'
+  ExecStart=/opt/local/TeamworkCloud/WebAppPlatform/bin/startup.sh
+  ExecStop=/opt/local/TeamworkCloud/WebAppPlatform/bin/shutdown.sh
+[Install]
+  WantedBy=multi-user.target

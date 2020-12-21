@@ -1,0 +1,16 @@
+[Unit]
+ Description=No Magic Teamwork Cloud
+ After=syslog.target network.target
+[Service]
+ Type=simple
+ EnvironmentFile=/etc/twcloud/twcloud-env
+ Environment=MALLOC_ARENA_MAX=2
+ User=twcloud
+ Group=twcloud
+ ExecStart=/opt/local/TeamworkCloud/scripts/linux/twcloud-run
+ StandardOutput=journal+console
+ StandardError=journal+console
+ SuccessExitStatus=143
+ LimitNOFILE=50000
+[Install]
+ WantedBy=multi-user.target
