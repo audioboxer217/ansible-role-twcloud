@@ -1,2 +1,4 @@
 ---
-# vars file for gibbscox.twcloud
+admin_user: "{{ lookup('env', 'TWC_ADMIN_USER') }}"
+admin_pass: "{{ lookup('env', 'TWC_ADMIN_PASS') }}"
+auth_pass: "{{ lookup('env', 'TWC_AUTH_PASS') }}"
