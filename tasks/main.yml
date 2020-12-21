@@ -1,17 +1,15 @@
 ---
-- name: Populate service facts
-  service_facts:
-
 - name: Install Flexnet
   include_tasks:
     file: flexnet.yml
-  when: 
-    - ansible_facts.services['lmadmin.service']['state'] != 'running'
-    - ansible_facts.services.['lmadmin.service']['state'] != 'enabled'
+  tags:
+  - flexnet
 
 - name: Install Teamwork Cloud
   include_tasks:
     file: twcloud.yml
+  tags:
+  - twcloud
 
 # - name: Update config file
 #   lineinfile:
