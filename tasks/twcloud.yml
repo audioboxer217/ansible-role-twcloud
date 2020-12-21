@@ -50,11 +50,10 @@
     mode: 0755
 
 - name: Update config files with IP
-  lineinfile:
+  replace:
     path: "{{ conf_file }}"
-    state: present
-    regexp: localhost
-    line: "{{ ansible_default_ipv4.address }}"
+    regexp: 'localhost'
+    replace: '{{ ansible_default_ipv4.address }}'
   loop:
   - /opt/local/TeamworkCloud/configuration/application.conf
   - /opt/local/TeamworkCloud/AuthServer/config/authserver.properties
