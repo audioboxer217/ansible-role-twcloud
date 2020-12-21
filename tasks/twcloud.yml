@@ -49,17 +49,6 @@
     state: directory
     mode: 0755
 
-- name: Update config files with IP
-  replace:
-    path: "{{ conf_file }}"
-    regexp: 'localhost'
-    replace: '{{ ansible_default_ipv4.address }}'
-  loop:
-  - /opt/local/TeamworkCloud/configuration/application.conf
-  - /opt/local/TeamworkCloud/AuthServer/config/authserver.properties
-  loop_control:
-    loop_var: conf_file
-
 - name: Create twcloud Firewall Service
   copy:
     src: twcloud.xml
@@ -122,18 +111,74 @@
     src: tunedisk.sh
     mode: 0755
 
-- name: Add tunedisk.sh to Server Startup
-  lineinfile:
-    path: /etc/rc.local
-    insertafter: EOF
-    mode: 0755
-    line: |
-      #  Perform additional tuning for TeamworkCloud
-      /home/twcloud/tunedisk.sh
+# - name: Add tunedisk.sh to Server Startup
+#   lineinfile:
+#     path: /etc/rc.local
+#     insertafter: EOF
+#     mode: 0755
+#     line: |
+#       #  Perform additional tuning for TeamworkCloud
+#       /home/twcloud/tunedisk.sh
 
-- name: Execute tunedisk.sh
-  command: /home/twcloud/tunedisk.sh
-  register: tunedisk_result
-  failed_when:
-  - tunedisk_result.stderr is defined
-  - tunedisk_result.stderr != ""
+# - name: Execute tunedisk.sh
+#   command: /home/twcloud/tunedisk.sh
+#   register: tunedisk_result
+#   failed_when:
+#   - tunedisk_result.stderr is defined
+#   - tunedisk_result.stderr != ""
+
+- name: Update config files with IP
+  replace:
+    path: "{{ conf_file }}"
+    regexp: 'localhost'
+    replace: '{{ ansible_default_ipv4.address }}'
+  loop:
+  - /opt/local/TeamworkCloud/configuration/application.conf
+  - /opt/local/TeamworkCloud/AuthServer/config/authserver.properties
+  loop_control:
+    loop_var: conf_file
+
+- name: Update Application Config
+  replace:
+    path: /opt/local/TeamworkCloud/configuration/application.conf
+    regexp: 'localhost'
+    replace: "{{ ansible_default_ipv4.address }}"
+
+- name: Update AuthServer Properties
+  replace:
+    path: /opt/local/TeamworkCloud/AuthServer/config/authserver.properties
+    regexp: "{{ auth_conf_item.regex }}"
+    replace: '{{ auth_conf_item.value }}'
+  loop_control:
+    loop_var: auth_conf_item
+  loop:
+  - { regex: 'localhost', value: '{{ ansible_default_ipv4.address }}' }
+  - { regex: '(server\.public\.host=).*', value: '\1{{ teamwork_fqdn }} '}
+  - { regex: '(twc\.server\.host=).*', value: '\1{{ ansible_default_ipv4.address }} '}
+  - { regex: '(cassandra\.contactPoints=).*', value: '\1{{ ansible_default_ipv4.address }} '}
+  - { regex: '(authentication\.redirect\.uri\.whitelist=).*', value: '\1https://{{ ansible_default_ipv4.address }}:8443/webapp/,https://{{ teamwork_fqdn }}:8443/webapp/,https://md_redirect' }
+
+- name: Update Passwords
+  no_log: true
+  replace:
+    path: "{{ web_conf_item.path }}"
+    regexp: "{{ web_conf_item.regex }}"
+    replace: "{{ web_conf_item.value }}"
+  loop_control:
+    loop_var: web_conf_item
+  loop:
+  - { regex: '(twc.admin.username=).*', value: '\1{{ admin_user }}', path: '/opt/local/TeamworkCloud/WebAppPlatform/shared/conf/webappplatform.properties' }
+  - { regex: '(twc.admin.password=).*', value: '\1{{ admin_pass }}', path: '/opt/local/TeamworkCloud/WebAppPlatform/shared/conf/webappplatform.properties' }
+  - { regex: '.*(authentication.client.secret=).*', value: '\1{{ auth_pass }}', path: '/opt/local/TeamworkCloud/WebAppPlatform/shared/conf/webappplatform.properties' }
+  - { regex: '.*(authentication.client.secret=).*', value: '\1{{ auth_pass }}', path: '/opt/local/TeamworkCloud/AuthServer/config/authserver.properties' }
+  - { regex: '(^\s*authentication-password = ").*', value: '\1{{ auth_pass }}', path: '/opt/local/TeamworkCloud/configuration/application.conf' }
+
+- name: Install and Enable Services
+  include_tasks:
+    file: install_service.yml
+  loop_control:
+    loop_var: service_name
+  loop:
+  - authserver
+  - twcloud
+  - webapp
