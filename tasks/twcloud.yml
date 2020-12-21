@@ -12,7 +12,7 @@
     comment: TeamWork Cloud Admin user
     state: present
 
-- name: Check that the somefile.conf exists
+- name: Check that the installer exists
   stat:
     path: /tmp/twcloud_190_sp4_installer_linux64.bin
   register: twcloud_installer_file
