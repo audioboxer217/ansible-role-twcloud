@@ -94,17 +94,8 @@
     remote_src: yes
   with_fileglob: /opt/local/FNPLicenseServerManager/lib*
 
-- name: Install lmadmin Service
-  copy:
-    src: lmadmin.service
-    dest: /etc/systemd/system/lmadmin.service
-    owner: root
-    group: root
-    mode: 0755
-
-- name: Enable lmadmin Service
-  systemd:
-    name: lmadmin
-    enabled: yes
-    state: started
-    daemon_reload: yes
+- name: Install and Enable Services
+  include_tasks:
+    file: install_service.yml
+  vars:
+    service_name: lmadmin
