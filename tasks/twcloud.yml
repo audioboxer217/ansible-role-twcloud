@@ -152,6 +152,7 @@
     dest: /home/twcloud/tunedisk.sh
     src: tunedisk.sh
     mode: 0755
+  register: create_tunedisk
 
 - name: Add tunedisk.sh to Server Startup
   lineinfile:
@@ -163,6 +164,7 @@
 - name: Execute tunedisk.sh
   command: /home/twcloud/tunedisk.sh
   register: tunedisk_result
+  when: create_tunedisk is changed
 
 - name: Update Application Config
   replace:
