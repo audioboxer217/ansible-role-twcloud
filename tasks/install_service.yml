@@ -5,7 +5,7 @@
     dest: /etc/systemd/system/{{ service_name }}.service
     owner: root
     group: root
-    mode: 0755
+    mode: 0664
 
 - name: Enable {{ service_name }} Service
   systemd:
