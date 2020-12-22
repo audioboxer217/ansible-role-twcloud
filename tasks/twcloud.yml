@@ -171,6 +171,8 @@
     path: /opt/local/TeamworkCloud/configuration/application.conf
     regexp: '"localhost"'
     replace: '"{{ ansible_default_ipv4.address }}"'
+  notify:
+  - restart_twcloud
 
 - name: Update AuthServer Properties
   replace:
@@ -184,6 +186,8 @@
   - { regex: '(twc\.server\.host=).*', value: '\g<1>{{ ansible_default_ipv4.address }}' }
   - { regex: '(cassandra\.contactPoints=).*', value: '\g<1>{{ ansible_default_ipv4.address }}' }
   - { regex: '(authentication\.redirect\.uri\.whitelist=).*', value: '\g<1>https://{{ ansible_default_ipv4.address }}:8443/webapp/,https://{{ teamwork_fqdn }}:8443/webapp/,https://md_redirect' }
+  notify:
+  - restart_authserver
 
 - name: Update WebApp Properties
   replace:
@@ -196,21 +200,41 @@
   - { regex: '(authentication\.server\.uri=).*', value: '\g<1>https://{{ teamwork_fqdn }}:8555/authentication' }
   - { regex: '(twc\.url=).*', value: '\g<1>https://{{ teamwork_fqdn }}:8111/authentication' }
   - { regex: '(flexnet\.server\.name=).*', value: '\g<1>{{ ansible_default_ipv4.address }}' }
+  notify:
+  - restart_webapp
 
-- name: Update Passwords
+- name: Update Password - TWCloud
   no_log: true
   replace:
-    path: "{{ web_conf_item.path }}"
+    path: /opt/local/TeamworkCloud/configuration/application.conf
+    regexp: '(^\s*authentication-password = ").*'
+    replace: '\g<1>{{ auth_pass }}'
+  notify:
+  - restart_authserver
+
+- name: Update Password - AuthServer
+  no_log: true
+  replace:
+    path: /opt/local/TeamworkCloud/AuthServer/config/authserver.properties
+    regexp: '.*(authentication.client.secret=).*'
+    replace: '\g<1>{{ auth_pass }}'
+  notify:
+  - restart_authserver
+
+- name: Update Passwords - WebApp
+  no_log: true
+  replace:
+    path: /opt/local/TeamworkCloud/WebAppPlatform/shared/conf/webappplatform.properties
     regexp: "{{ web_conf_item.regex }}"
     replace: "{{ web_conf_item.value }}"
   loop_control:
     loop_var: web_conf_item
   loop:
-  - { regex: '(twc.admin.username=).*', value: '\g<1>{{ admin_user }}', path: '/opt/local/TeamworkCloud/WebAppPlatform/shared/conf/webappplatform.properties' }
-  - { regex: '(twc.admin.password=).*', value: '\g<1>{{ admin_pass }}', path: '/opt/local/TeamworkCloud/WebAppPlatform/shared/conf/webappplatform.properties' }
-  - { regex: '.*(authentication.client.secret=).*', value: '\g<1>{{ auth_pass }}', path: '/opt/local/TeamworkCloud/WebAppPlatform/shared/conf/webappplatform.properties' }
-  - { regex: '.*(authentication.client.secret=).*', value: '\g<1>{{ auth_pass }}', path: '/opt/local/TeamworkCloud/AuthServer/config/authserver.properties' }
-  - { regex: '(^\s*authentication-password = ").*', value: '\g<1>{{ auth_pass }}', path: '/opt/local/TeamworkCloud/configuration/application.conf' }
+  - { regex: '(twc.admin.username=).*', value: '\g<1>{{ admin_user }}' }
+  - { regex: '(twc.admin.password=).*', value: '\g<1>{{ admin_pass }}' }
+  - { regex: '.*(authentication.client.secret=).*', value: '\g<1>{{ auth_pass }}' }
+  notify:
+  - restart_webapp
 
 - name: Install and Enable Services
   include_tasks:

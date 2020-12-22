@@ -1,2 +1,18 @@
 ---
-# handlers file for gibbscox.twcloud
+- name: restart_twcloud
+  service:
+    name: twcloud
+    enabled: yes
+    state: restarted
+
+- name: restart_authserver
+  service:
+    name: authserver
+    enabled: yes
+    state: restarted
+    
+- name: restart_webapp
+  service:
+    name: webapp
+    enabled: yes
+    state: restarted
