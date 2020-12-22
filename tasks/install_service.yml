@@ -6,6 +6,7 @@
     owner: root
     group: root
     mode: 0664
+  register: service_install
 
 - name: Enable {{ service_name }} Service
   systemd:
@@ -13,3 +14,4 @@
     enabled: yes
     state: started
     daemon_reload: yes
+  when: service_install is changed
