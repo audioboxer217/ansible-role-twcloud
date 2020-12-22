@@ -40,13 +40,55 @@
   - twcloud_install.stderr is defined
   - twcloud_install.stderr != ""
 
+- name: Create ENV file
+  copy:
+    src: twcloud.env
+    dest: /etc/twcloud/twcloud-env
+
+- name: Create .twcloud Dir
+  file:
+    path: /home/twcloud/.twcloud/19.0/workspace/tmp
+    state: directory
+
+- name: Create PID Dir
+  file:
+    path: /var/run/twcloud
+    state: directory
+
+- name: Create Log Dir
+  file:
+    path: /var/log/twcloud/
+    state: directory
+
 - name: Set Directory Perms
   file:
-    path: /opt/local/TeamworkCloud/
+    path: "{{ dir }}"
     recurse: yes
     owner: twcloud
     group: twcloud
     state: directory
+    mode: 0755
+  loop_control:
+    loop_var: dir
+  loop:
+  - /home/twcloud/.twcloud/
+  - /var/run/twcloud/
+  - /var/log/twcloud/
+  - /opt/local/TeamworkCloud/
+
+- name: Update twcloud.ini
+  lineinfile:
+    path: /opt/local/TeamworkCloud/twcloud.ini
+    state: present
+    regexp: -Djava.io.tmpdir=/tmp
+    line: -Djava.io.tmpdir=/home/twcloud/.twcloud/19.0/workspace/tmp
+
+- name: Create Startup Script
+  copy:
+    src: twcloud-run.sh
+    dest: /opt/local/TeamworkCloud/scripts/linux/twcloud-run
+    owner: twcloud
+    group: twcloud
     mode: 0755
 
 - name: Create twcloud Firewall Service
@@ -116,9 +158,7 @@
     path: /etc/rc.local
     insertafter: EOF
     mode: 0755
-    line: |
-      #  Perform additional tuning for TeamworkCloud
-      /home/twcloud/tunedisk.sh
+    line: /home/twcloud/tunedisk.sh
 
 - name: Execute tunedisk.sh
   command: /home/twcloud/tunedisk.sh
