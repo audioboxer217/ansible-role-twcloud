@@ -1,0 +1,6 @@
+#!/bin/bash
+echo TWCLOUD_HOME=${TWCLOUD_HOME}
+echo TWCLOUD_OWNR=${TWCLOUD_OWNR}
+echo JAVA_HOME=${JAVA_HOME}
+cd ${TWCLOUD_HOME}
+./twcloud
