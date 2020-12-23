@@ -14,15 +14,15 @@
 
 - name: Check if install needed
   stat:
-    path: opt/local/TeamworkCloud/twcloud
-  register: twcloud_install_dir
+    path: /opt/local/TeamworkCloud/twcloud
+  register: twcloud_file
 
 - name: Get twcloud Installer
   get_url:
     dest: /tmp
     url: http://download1.nomagic.com/twcloud190sp4/twcloud_190_sp4_installer_linux64.bin
     mode: 0755
-  when: not twcloud_install_dir.stat.exists
+  when: not twcloud_file.stat.exists
 
 - name: Install TeamWork Cloud
   command: |
