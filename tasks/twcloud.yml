@@ -210,7 +210,7 @@
     regexp: '(^\s*authentication-password = ").*'
     replace: '\g<1>{{ auth_pass }}'
   notify:
-  - restart_authserver
+  - restart_twcloud
 
 - name: Update Password - AuthServer
   no_log: true
