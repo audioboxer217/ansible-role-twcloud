@@ -208,7 +208,7 @@
   replace:
     path: /opt/local/TeamworkCloud/configuration/application.conf
     regexp: '(^\s*authentication-password = ").*'
-    replace: '\g<1>{{ auth_pass }}'
+    replace: '\g<1>{{ auth_pass }}"'
   notify:
   - restart_twcloud
 
