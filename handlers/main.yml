@@ -4,12 +4,14 @@
     name: twcloud
     enabled: yes
     state: restarted
+  notify: restart_authserver
 
 - name: restart_authserver
   service:
     name: authserver
     enabled: yes
     state: restarted
+  notify: restart_webapp
     
 - name: restart_webapp
   service:
