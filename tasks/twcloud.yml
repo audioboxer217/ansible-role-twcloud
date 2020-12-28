@@ -199,7 +199,7 @@
     loop_var: web_conf_item
   loop:
   - { regex: '(authentication\.server\.uri=).*', value: '\g<1>https://{{ teamwork_fqdn }}:8555/authentication' }
-  - { regex: '(twc\.url=).*', value: '\g<1>https://{{ teamwork_fqdn }}:8111/authentication' }
+  - { regex: '(twc\.url=).*', value: '\g<1>https://{{ teamwork_fqdn }}:8111' }
   notify:
   - restart_webapp
 
