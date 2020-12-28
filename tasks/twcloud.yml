@@ -76,13 +76,6 @@
   - /var/log/twcloud/
   - /opt/local/TeamworkCloud/
 
-- name: Update twcloud.ini
-  lineinfile:
-    path: /opt/local/TeamworkCloud/twcloud.ini
-    state: present
-    regexp: -Djava.io.tmpdir=/tmp
-    line: -Djava.io.tmpdir=/home/twcloud/.twcloud/19.0/workspace/tmp
-
 - name: Create Startup Script
   copy:
     src: twcloud-run.sh
