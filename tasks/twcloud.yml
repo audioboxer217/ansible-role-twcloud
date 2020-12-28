@@ -169,8 +169,16 @@
 - name: Update Application Config
   replace:
     path: /opt/local/TeamworkCloud/configuration/application.conf
-    regexp: '"localhost"'
-    replace: '"{{ ansible_default_ipv4.address }}"'
+    regexp: "{{ app_conf_item.regex }}"
+    replace: "{{ app_conf_item.value }}"
+  loop_control:
+    loop_var: app_conf_item
+  loop:
+  - { regex: '(^\s*seeds = ).*', value: '\g<1>["{{ ansible_default_ipv4.address }}"]' }
+  - { regex: '(^\s*host = ).*', value: '\g<1>"{{ ansible_default_ipv4.address }}"' }
+  - { regex: '(prefix = ).*', value: '\g<1>"{{ ansible_default_ipv4.address }}"' }
+  - { regex: '(hostname = ).*', value: '\g<1>"{{ ansible_default_ipv4.address }}"'}
+  - { regex: '(seed-nodes = \["akka\.tcp:\/\/twcloud\@).*(:2552"])', value: '\g<1>{{ ansible_default_ipv4.address }}\g<2>'}
   notify:
   - restart_twcloud
 
@@ -185,21 +193,20 @@
   - { regex: '(server\.public\.host=).*', value: '\g<1>{{ teamwork_fqdn }}' }
   - { regex: '(twc\.server\.host=).*', value: '\g<1>{{ ansible_default_ipv4.address }}' }
   - { regex: '(cassandra\.contactPoints=).*', value: '\g<1>{{ ansible_default_ipv4.address }}' }
-  - { regex: '(authentication\.redirect\.uri\.whitelist=).*', value: '\g<1>https://{{ ansible_default_ipv4.address }}:8443/webapp/,https://{{ teamwork_fqdn }}:8443/webapp/,https://md_redirect' }
+  - { regex: '(authentication\.redirect\.uri\.whitelist=).*', value: '\g<1>https://{{ ansible_default_ipv4.address }}:8443/webapp/,https://{{ ansible_default_ipv4.address }}:8111/,https://{{ teamwork_fqdn }}:8443/webapp/,https://{{ teamwork_fqdn }}:8111/,https://md_redirect' }
   notify:
   - restart_authserver
 
 - name: Update WebApp Properties
   replace:
     path: /opt/local/TeamworkCloud/WebAppPlatform/shared/conf/webappplatform.properties
-    regexp: "{{ auth_conf_item.regex }}"
-    replace: '{{ auth_conf_item.value }}'
+    regexp: "{{ web_conf_item.regex }}"
+    replace: '{{ web_conf_item.value }}'
   loop_control:
-    loop_var: auth_conf_item
+    loop_var: web_conf_item
   loop:
   - { regex: '(authentication\.server\.uri=).*', value: '\g<1>https://{{ teamwork_fqdn }}:8555/authentication' }
   - { regex: '(twc\.url=).*', value: '\g<1>https://{{ teamwork_fqdn }}:8111/authentication' }
-  - { regex: '(flexnet\.server\.name=).*', value: '\g<1>{{ ansible_default_ipv4.address }}' }
   notify:
   - restart_webapp
 

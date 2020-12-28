@@ -1,4 +1,16 @@
 ---
-admin_user: "{{ lookup('env', 'TWC_ADMIN_USER') }}"
-admin_pass: "{{ lookup('env', 'TWC_ADMIN_PASS') }}"
-auth_pass: "{{ lookup('env', 'TWC_AUTH_PASS') }}"
+admin_user: "{% if lookup('env', 'TWC_ADMIN_USER') != '' -%}
+              {{ lookup('env', 'TWC_ADMIN_USER') }}
+             {%- else -%}
+              Administrator
+             {%- endif %}"
+admin_pass: "{% if lookup('env', 'TWC_ADMIN_PASS') != '' -%}
+              {{ lookup('env', 'TWC_ADMIN_PASS') }}
+             {%- else -%}
+              Administrator
+             {%- endif %}"
+auth_pass: "{% if lookup('env', 'TWC_AUTH_PASS') != '' -%}
+              {{ lookup('env', 'TWC_AUTH_PASS') }}
+             {%- else -%}
+              CHANGE_ME
+             {%- endif %}"
